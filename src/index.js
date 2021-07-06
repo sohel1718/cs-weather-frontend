@@ -1,12 +1,36 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import './index.css';
+import {  ApolloClient,
+  InMemoryCache,
+  ApolloProvider, HttpLink, from } from '@apollo/client';
+import { onError } from '@apollo/client/link/error';
 import App from './App';
 import reportWebVitals from './reportWebVitals';
 
+const errorLink =  onError(({ graphqlErrors, networkErrors }) => {
+  if (graphqlErrors) {
+    graphqlErrors.map(({ message, location, path }) => {
+      console.log(`graphql error ${message}`);
+    })
+  }
+})
+
+const link = from([
+  errorLink,
+  new HttpLink({ uri: "http://localhost:4000/grapghql" })
+])
+
+const client = new ApolloClient({
+  cache: new InMemoryCache(),
+  link: link,
+});
+
 ReactDOM.render(
   <React.StrictMode>
-    <App />
+    <ApolloProvider client={client}>
+      <App />
+    </ApolloProvider>
   </React.StrictMode>,
   document.getElementById('root')
 );
